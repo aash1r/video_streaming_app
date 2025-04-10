@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routes import auth
-
+from db.db import engine
+from db.base import Base
 
 app = FastAPI()
 
@@ -21,3 +22,6 @@ app.include_router(auth.router,prefix = "/auth")
 @app.get("/")
 def root():
     return "Hellooo!!!!!!!"
+
+
+Base.metadata.create_all(bind=engine)

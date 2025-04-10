@@ -6,7 +6,7 @@ config = Config()
 
 engine = create_engine(config.POSTGRES_DB_URL)
 
-SessionLocal = sessionmaker(bind=engine, autocommit= False, autoFlush = False)
+SessionLocal = sessionmaker(bind=engine, autocommit= False)
 
 def get_db():
     db = SessionLocal()

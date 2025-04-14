@@ -1,6 +1,7 @@
 import stat
 from config import Config
 from db.db import get_db
+from db.middleware.auth_middleware import get_current_user
 from fastapi import APIRouter, Depends, HTTPException, Response, Cookie
 import boto3
 from helpers.auth_helper import get_secret_hash
@@ -108,8 +109,23 @@ def resfresh_token(refresh_token:str = Cookie(None),response: Response = None,us
                 "REFRESH_TOKEN":refresh_token,
                 "SECRET_HASH":secret_hash}
         )        
-        return cognito_response
+
+
+        auth_result = cognito_response.get("AuthenticationResult")
+        
+        if not auth_result:
+            raise HTTPException(status_code =400,detail="Failed to login user")
+        
+        access_token = auth_result.get("AccessToken")
+        
+        response.set_cookie(key="access_token",value=access_token,httponly=True,secure=True)
+
+        return {"message":"Access token refreshed!"}
     
     except Exception as e:
         raise HTTPException(400, f"Cognito signup exception {e}")
     
+
+@router.get("/me")
+def protected_route(user = Depends(get_current_user)):
+    return{"message":"You are authenticated!","user":user}
